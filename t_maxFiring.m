@@ -126,3 +126,5 @@ innerRetina.compute(bp);
 psth = innerRetina.mosaic{1}.get('psth');
 
 figure; ieMovie(psth(:,:,1:10:end));
+
+figure; sceneShowImage(scene);
