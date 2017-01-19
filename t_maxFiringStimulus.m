@@ -1,4 +1,7 @@
 
+% must run t_maxFiring first
+% isetbio: git checkout 27993f6
+
 clear srf irf sta sta3
 
 params.eyeRadius = 4;
@@ -9,7 +12,7 @@ innerRetina.mosaicCreate('type',cellType{1});
 srf = RGB2XWFormat(innerRetina.mosaic{1}.sRFcenter{1,1}-innerRetina.mosaic{1}.sRFsurround{1,1});
 irf= innerRetina.mosaic{1}.tCenter;
 
-sta = srf*irf{1}';
+sta = srf*irf';
 
 movieBig = zeros(256+64,256+64,3*size(sta,2));
 
@@ -20,14 +23,14 @@ for ecc = .1:.5:5
     eccind = eccind+1
     clear sta3
     for ii = 1:size(sta,2)
-        staTemp = XW2RGBFormat(sta(:,ii),186,186);
+        staTemp = XW2RGBFormat(sta(:,ii),93,93);
         sta3(:,:,ii) = imresize(staTemp,[rs(eccind),rs(eccind)]);
     end
 %     
-%     for xc = [-1 0 1]
-%         for yc = [-1 0 1]
-    for xc = [-1:.25:1]
-        for yc = [-1:.25:1]
+    for xc = [-1 0 1]
+        for yc = [-1 0 1]
+%     for xc = [-1:.25:1]
+%         for yc = [-1:.25:1]
             if ~(xc == 0 && yc == 0)
                 xcr = xc + 1*(1/8)*rand(1,1);
                 ycr = yc + 1*(1/8)*rand(1,1);
@@ -47,6 +50,6 @@ for ecc = .1:.5:5
     end
     
 end
-p.save = true;
+p.save = false;
 p.vname = '/Users/james/Documents/MATLAB/HLMaxFiring/maxFireStim0.avi';
 figure; ieMovie(movieBig,p);

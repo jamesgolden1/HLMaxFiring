@@ -28,12 +28,13 @@ display = displayCreate('LCD-Apple');
 %% Scene
 % Generic scene
 scene = sceneCreate;
+figure; sceneShowImage(scene);
 
 % Alternatively, load a custom scene
-% Ibig = imread('peppers.png');
-% I = rgb2gray(imresize(Ibig,0.5));
-% params.meanLuminance = 200;
-% scene = sceneFromFile(I, 'rgb', params.meanLuminance, display);
+Ibig = imread('peppers.png');
+I = rgb2gray(imresize(Ibig,0.5));
+params.meanLuminance = 200;
+scene = sceneFromFile(I, 'rgb', params.meanLuminance, display);
 %% Optical image
 oi  = oiCreate('wvf human');
 
@@ -74,7 +75,7 @@ cMosaic.setSizeToFOV(sceneFOV, 'sceneDist', sceneDist, 'focalLength', fLength);
 cMosaic.integrationTime = .001;%cMosaic.os.timeStep;
 %%
 
-for frameNumber = 1%:frameTotal
+for frameNumber = 1:frameTotal
     
     barMovie = ones([sceneGet(scene, 'size'), 3])*0.5;
     
@@ -101,13 +102,13 @@ for frameNumber = 1%:frameTotal
     absorptionsMat(:,:,frameNumber) = cMosaic.absorptions;
 end
 cMosaic.absorptions = absorptionsMat;
-
+cMosaic.emPositions=zeros(frameTotal,2);
 cMosaic.os.noiseFlag = 'none';
 cMosaic.computeCurrent();
 
 %% Bipolar
 
-bpParams.cellType = 'onDiffuse';
+bpParams.cellType = 'offdiffuse';
 bp = bipolar(cMosaic, bpParams);
 bp.set('sRFcenter',1);
 bp.set('sRFsurround',0);
@@ -115,6 +116,7 @@ bp.compute(cMosaic);
 
 %% RGC
 params.eyeRadius = 4;
+params.eyeAngle = 90;
 innerRetina=ir(bp,params);
 cellType = {'on parasol'};
 innerRetina.mosaicCreate('type',cellType{1});
