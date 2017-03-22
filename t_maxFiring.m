@@ -24,6 +24,9 @@
 %% Display
 
 display = displayCreate('LCD-Apple');
+displayLeftEye = displayCreate('Vive-HTC-leftEye');
+displayRightEye = displayCreate('Vive-HTC-rightEye');
+disp('moving on to "scene" creation now ...');
 
 %% Scene
 % Generic scene
@@ -35,6 +38,8 @@ Ibig = imread('peppers.png');
 I = rgb2gray(imresize(Ibig,0.5));
 params.meanLuminance = 200;
 scene = sceneFromFile(I, 'rgb', params.meanLuminance, display);
+disp('moving on to optical image creation now ...');
+
 %% Optical image
 oi  = oiCreate('wvf human');
 
@@ -45,6 +50,7 @@ params.fov = 1.5;
 params.barWidth = 10;
 params.meanLuminance = 200;
 sceneRGB = zeros([sceneGet(scene, 'size'), frameTotal, 3]);
+disp('moving on to the cone mosaic creation now ...');
 
 %% Cone mosaic
 cMosaic = coneMosaic;
@@ -106,6 +112,8 @@ cMosaic.emPositions=zeros(frameTotal,2);
 cMosaic.os.noiseFlag = 'none';
 cMosaic.computeCurrent();
 
+disp('moving on to bipolar creation now ...');
+
 %% Bipolar
 
 bpParams.cellType = 'offdiffuse';
@@ -114,12 +122,16 @@ bp.set('sRFcenter',1);
 bp.set('sRFsurround',0);
 bp.compute(cMosaic);
 
+disp('moving on to RGC creation now ...');
+
 %% RGC
 params.eyeRadius = 4;
 params.eyeAngle = 90;
 innerRetina=ir(bp,params);
-cellType = {'on parasol'};
+cellType = {'off parasol'};
 innerRetina.mosaicCreate('type',cellType{1});
+
+%innerRetina.mosaicCreate('type',cellType{1});
 
 innerRetina.compute(bp);
 
@@ -128,3 +140,5 @@ psth = innerRetina.mosaic{1}.get('psth');
 figure; ieMovie(psth(:,:,1:10:end));
 
 figure; sceneShowImage(scene);
+
+disp('done');
