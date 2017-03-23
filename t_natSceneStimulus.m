@@ -1,14 +1,14 @@
 
 
-load(['/Users/james/Documents/MATLAB/'...
-    'akheitman/NSEM_mapPRJ/Stimuli/'...
-    'NSEM_eye-long-v2/testmovie_schemeA_8pix_Identity_8pix.mat']);
+% load(['/Users/james/Documents/MATLAB/'...
+%     'akheitman/NSEM_mapPRJ/Stimuli/'...
+%     'NSEM_eye-long-v2/testmovie_schemeA_8pix_Identity_8pix.mat']);
 
 % % Needs this repo: https://github.com/isetbio/RemoteDataToolbox
-% rdt = RdtClient('isetbio');
-% rdt.crp('resources/data/rgc');
-% data = rdt.readArtifact('testmovie_schemeA_8pix_Identity_8pix', 'type', 'mat');
-% testmovie = data.testmovie;
+rdt = RdtClient('isetbio');
+rdt.crp('resources/data/rgc');
+data = rdt.readArtifact('testmovie_schemeA_8pix_Identity_8pix', 'type', 'mat');
+testmovie = data.testmovie;
                 
 %%
 

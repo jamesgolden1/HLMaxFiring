@@ -121,7 +121,7 @@ end
 % movOptNorm = (movRZ./norm(movRZ(:)));
 % movOptScaled = ieScale(movOptNorm,255);
 
-frTotal = 20;%movLen;
+frTotal = movLen;
 movOptRed = movStim(:,:,1:frTotal);
 movOptAbs = 1*movOptRed./sum(abs(movOptRed(:)));
 movOptScaled = round(127*movOptAbs./max(movOptAbs(:))) + 128;
