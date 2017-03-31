@@ -12,17 +12,17 @@ innerRetina.mosaicCreate('type',cellType{1});
 srf = RGB2XWFormat(innerRetina.mosaic{1}.sRFcenter{1,1}-innerRetina.mosaic{1}.sRFsurround{1,1});
 irf= innerRetina.mosaic{1}.tCenter;
 
-sta = srf*irf';
+sta = -srf*irf';
 
 szRows = 1080; szCols = 1200;
 % movieBig = zeros(256+64,256+64,3*size(sta,2));
-movieBig = zeros(szRows,szCols,1*size(sta,2));
+movieBig = single(zeros(szRows,szCols,2*size(sta,2)));
 
 
 % rs = [4 8 12 16 20 24 ]*2; 
-rs = [4:2:24]*2;
+rs = [4:2:100]*2;
 eccind = 0;
-for ecc = .1:.5:5
+for ecc = .1:.5:25  %radius
     eccind = eccind+1
     clear sta3
     for ii = 1:size(sta,2)
@@ -30,10 +30,10 @@ for ecc = .1:.5:5
         sta3(:,:,ii) = imresize(staTemp,[rs(eccind),rs(eccind)]);
     end
 %     
-    for xc = [-1 0 1]
-        for yc = [-1 0 1]
-%     for xc = [-1:.25:1]
-%         for yc = [-1:.25:1]
+%     for xc = [-1 0 1]
+%         for yc = [-1 0 1]
+    for xc = [-1:.25:1] %
+        for yc = [-1:.25:1]
             if ~(xc == 0 && yc == 0)
                 xcr = xc + 1*(1/8)*rand(1,1);
                 ycr = yc + 1*(1/8)*rand(1,1);
@@ -43,7 +43,7 @@ for ecc = .1:.5:5
                 ycvecst = ycn*(8+24*ecc) + szCols/2+32 - round(size(sta3,1)/2) + 1;
                 ycvecend = ycn*(8+24*ecc) + szCols/2+32 + round(size(sta3,1)/2);
                 
-                rstart = round((400-1)*rand(3,1))+1;
+                rstart = round((200-1)*rand(3,1))+1;
                 for tind = 1%:2
                     movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+199) = ...
                         movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+199) + sta3;
@@ -53,6 +53,9 @@ for ecc = .1:.5:5
     end
     
 end
-p.save = false;
-p.vname = '/Users/james/Documents/MATLAB/HLMaxFiring/maxFireStim0.avi';
+
+%%
+p.save = true;
+
+p.vname = '/Users/bireswarlaha/Box Sync/Neuro/regen/stimVideo/maxFireStim1_OffParasol.avi';
 figure; ieMovie(movieBig,p);

@@ -6,7 +6,7 @@ clear srf irf sta sta3
 
 params.eyeRadius = 4;
 innerRetina=ir(bp,params);
-cellType = {'on parasol'};
+cellType = {'on parasol'};  %'on parasol', off parasol, on midget, off midget, 'sbc'
 innerRetina.mosaicCreate('type',cellType{1});
 
 srf = RGB2XWFormat(innerRetina.mosaic{1}.sRFcenter{1,1}-innerRetina.mosaic{1}.sRFsurround{1,1});
@@ -15,14 +15,19 @@ irf= innerRetina.mosaic{1}.tCenter;
 sta = -srf*irf';
 
 szRows = 1080; szCols = 1200;
+%frameLength = 2*size(sta,2);
+frameLength = 90 * 5;
 % movieBig = zeros(256+64,256+64,3*size(sta,2));
-movieBig = single(zeros(szRows,szCols,2*size(sta,2)));
+%for optimal stimulus
+movieBig = single(zeros(szRows,szCols,frameLength));
 
+%for white noise
+%movieBigRand = single(randn(szRows,szCols,1));
 
 % rs = [4 8 12 16 20 24 ]*2; 
 rs = [4:2:100]*2;
 eccind = 0;
-for ecc = .1:.5:25
+for ecc = .1:.5:25  %radius
     eccind = eccind+1
     clear sta3
     for ii = 1:size(sta,2)
@@ -32,7 +37,7 @@ for ecc = .1:.5:25
 %     
 %     for xc = [-1 0 1]
 %         for yc = [-1 0 1]
-    for xc = [-1:.25:1]
+    for xc = [-1:.25:1] %angle
         for yc = [-1:.25:1]
             if ~(xc == 0 && yc == 0)
                 xcr = xc + 1*(1/8)*rand(1,1);
@@ -55,7 +60,7 @@ for ecc = .1:.5:25
 end
 
 %%
-p.save = true;
+p.save = false;
 
-p.vname = '/Users/bireswarlaha/Box Sync/Neuro/regen/stimVideo/maxFireStim1_OffParasol.avi';
+p.vname = '/Users/bireswarlaha/Box Sync/Neuro/regen/stimVideo/maxFireStim1_OnParasol.avi';
 figure; ieMovie(movieBig,p);
