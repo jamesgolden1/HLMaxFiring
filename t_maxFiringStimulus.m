@@ -23,6 +23,8 @@ movieBig = single(zeros(szRows,szCols,frameLength));
 
 %for white noise
 %movieBigRand = single(randn(szRows,szCols,1));
+% movieBig = zeros(256+64,256+64,3*size(sta,2));
+movieBig = zeros(1080,1200,3*size(sta,2));
 
 % rs = [4 8 12 16 20 24 ]*2; 
 rs = [4:2:100]*2;

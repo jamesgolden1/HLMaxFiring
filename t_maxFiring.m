@@ -24,8 +24,8 @@
 %% Display
 
 display = displayCreate('LCD-Apple');
-%displayLeftEye = displayCreate('Vive-HTC-leftEye');
-%displayRightEye = displayCreate('Vive-HTC-rightEye');
+% displayLeftEye = displayCreate('Vive-HTC-leftEye');
+% displayRightEye = displayCreate('Vive-HTC-rightEye');
 disp('moving on to "scene" creation now ...');
 
 %% Scene

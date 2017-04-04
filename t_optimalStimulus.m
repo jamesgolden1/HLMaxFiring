@@ -4,6 +4,7 @@
 % response.
 % 
 % Isetbio: git checkout 57f9775 (rgc spatial RF Q)
+% git stash apply
 % Set extent to 5 in buildSpatialRFArray
 % Add cm.os.timeStep = cm.integrationTime; to ieStimulusCMosaic
 
@@ -28,18 +29,29 @@ bp.set('sRFsurround',0);
 bp.compute(cMosaic);
 
 irfBpBig = RGB2XWFormat(bp.responseCenter)';
-irfBp = irfBpBig(:,100); irfBp = irfBp(1:60)./max(irfBp);
+[mv,mi] = max(irfBpBig(20,:));
+irfBp = irfBpBig(:,mi); 
+irfBp = irfBp(1:60)./max(irfBp);
 figure; plot(.005*[1:60],irfBp)
 % irfBp = irfBpBig(:,50); irfBp = irfBp(1:30)./max(irfBp);
 % figure; plot(coneParams.integrationTime*[1:30],irfBp)
 
 
 %% RGC
-params.eyeRadius = mmEcc;
-params.eyeAngle = 90;
-innerRetina=ir(bp,params);
-cellType = {'off parasol'};
-innerRetina.mosaicCreate('type',cellType{1});
+clear rgcParams
+irParams.eyeRadius = mmEcc;
+irParams.eyeAngle = 90;
+
+
+% rgcParams.type = cellType;
+rgcParams.centerNoise = 0;%.2;
+rgcParams.model = 'GLM';
+rgcParams.ellipseParams = [1 1 0];  
+
+innerRetina=ir(bp,irParams);
+
+rgcParams.type = 'off parasol';
+innerRetina.mosaicCreate(rgcParams);
 
 irf= innerRetina.mosaic{1}.tCenter;
 
@@ -69,9 +81,11 @@ for ri = 1:size(innerRetina.mosaic{1}.cellLocation,1)
         cvStart{ri,ci} = 1+ceil(innerRetina.mosaic{1}.cellLocation{ri,ci}(2) +ceil((rfMaxC-rfMinC)/2)+1);% - ceil(rfSize(2)/2)+1);
         cvEnd{ri,ci}   = 1+ceil(innerRetina.mosaic{1}.cellLocation{ri,ci}(2) +ceil((rfMaxC-rfMinC)/2) + ceil(rfSize(2)/1));
         
+        if (rvStart{ri,ci} > 0) && (cvStart{ri,ci} > 0)
+        
         spStim(rvStart{ri,ci}:rvEnd{ri,ci},cvStart{ri,ci}:cvEnd{ri,ci}) = ...
             spStim(rvStart{ri,ci}:rvEnd{ri,ci},cvStart{ri,ci}:cvEnd{ri,ci})+innerRetina.mosaic{1}.sRFcenter{ri,ci}-innerRetina.mosaic{1}.sRFsurround{ri,ci};
-        
+        end
     end
 end
 
@@ -98,15 +112,15 @@ for ri = 1:size(innerRetina.mosaic{1}.cellLocation,1)
         
 %         tStart = 1;%round(1+1*160*rand(7,1));
         
-        if mod(ri,2)==0 && mod(ci,2)==0
+%         if mod(ri,2)==0 && mod(ci,2)==0
             tStart = [1 40 80 120 160];
-        elseif mod(ri,2)==0 && mod(ci,2)==1
-            tStart = 20+[1 40 80 120 160];
-        elseif mod(ri,2)==1 && mod(ci,2)==0
-            tStart = 20+[1 40 80 120 160];
-        elseif mod(ri,2)==1 && mod(ci,2)==1
-            tStart = [1 40 80 120 160];
-        end
+%         elseif mod(ri,2)==0 && mod(ci,2)==1
+%             tStart = 20+[1 40 80 120 160];
+%         elseif mod(ri,2)==1 && mod(ci,2)==0
+%             tStart = 20+[1 40 80 120 160];
+%         elseif mod(ri,2)==1 && mod(ci,2)==1
+%             tStart = [1 40 80 120 160];
+%         end
         for ti = 1:length(tStart)
         movStim(rvStart{ri,ci}:rvEnd{ri,ci},cvStart{ri,ci}:cvEnd{ri,ci},tStart(ti):tStart(ti)+length(irf2)-1) = ...
             movStim(rvStart{ri,ci}:rvEnd{ri,ci},cvStart{ri,ci}:cvEnd{ri,ci},tStart(ti):tStart(ti)+length(irf2)-1)+sta3;
@@ -136,8 +150,14 @@ normScaled = norm(movOptScaled(:));
 % 
 movOptScaled(1,1,:) = 1;
 clear cMosaic
-xofs = 1; yofs = 1;
-iStim = ieStimulusMovieCMosaic(movOptScaled(xofs:end-xofs+1,yofs:end-yofs+1,:),coneParams);
+xofs = 12; yofs = 13;
+% iStim = ieStimulusMovieCMosaic(movOptScaled(xofs:end-xofs+1,yofs:end-yofs+1,:),coneParams);
+iStim = ieStimulusMovieCMosaic(movOptScaled(xofs:end-9+1,yofs:end-8+1,:),coneParams);
+
+% xofs = 16; yofs = 17;
+% % iStim = ieStimulusMovieCMosaic(movOptScaled(xofs:end-xofs+1,yofs:end-yofs+1,:),coneParams);
+% iStim = ieStimulusMovieCMosaic(movOptScaled(xofs:end-9+1,yofs:end-8+1,:),coneParams);
+
 cMosaic = iStim.cMosaic;
 
 % cMosaic.integrationTime = .01;
