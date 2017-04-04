@@ -57,34 +57,39 @@ degreesPerPixel = 110/2160;
 %% Get temporal response from physiology data
 
 % Use the RemoteDataToolbox
-rdt = RdtClient('isetbio');
+% rdt = RdtClient('isetbio');
 
 % Get data for chosen cell type
 switch ieParamFormat(cellType)
     case{'onparasol'}
-        rdt.crp('resources/data/rgc/apricot');
-        data = rdt.readArtifact('mosaicGLM_apricot_ONParasol', 'type', 'mat');
-        mosaicGLM = data.mosaicGLM;
+%         rdt.crp('resources/data/rgc/apricot');
+%         data = rdt.readArtifact('mosaicGLM_apricot_ONParasol', 'type', 'mat');
+%         mosaicGLM = data.mosaicGLM;
+        load('dat/mosaicGLM_apricot_ONParasol.mat');
         scaleFactor = scaleFactorArr(1);
     case{'offparasol'}
-        rdt.crp('resources/data/rgc/apricot');
-        data = rdt.readArtifact('mosaicGLM_apricot_OFFParasol', 'type', 'mat');
-        mosaicGLM = data.mosaicGLM;
+%         rdt.crp('resources/data/rgc/apricot');
+%         data = rdt.readArtifact('mosaicGLM_apricot_OFFParasol', 'type', 'mat');
+%         mosaicGLM = data.mosaicGLM;
+        load('dat/mosaicGLM_apricot_OFFParasol.mat');
         scaleFactor = scaleFactorArr(2);
     case{'onmidget'}
-        rdt.crp('resources/data/rgc/apricot');
-        data = rdt.readArtifact('mosaicGLM_apricot_ONMidget', 'type', 'mat');
-        mosaicGLM = data.mosaicGLM;
+%         rdt.crp('resources/data/rgc/apricot');
+%         data = rdt.readArtifact('mosaicGLM_apricot_ONMidget', 'type', 'mat');
+%         mosaicGLM = data.mosaicGLM;
+        load('dat/mosaicGLM_apricot_ONMidget.mat');
         scaleFactor = scaleFactorArr(3);
     case{'offmidget'}
-        rdt.crp('resources/data/rgc/apricot');      
-        data = rdt.readArtifact('mosaicGLM_apricot_OFFMidget', 'type', 'mat');
-        mosaicGLM = data.mosaicGLM;
+%         rdt.crp('resources/data/rgc/apricot');      
+%         data = rdt.readArtifact('mosaicGLM_apricot_OFFMidget', 'type', 'mat');
+%         mosaicGLM = data.mosaicGLM;
+        load('dat/mosaicGLM_apricot_OFFMidget.mat');
         scaleFactor = scaleFactorArr(4);
     case{'onsbc','sbc'}
-        rdt.crp('resources/data/rgc/apricot');
-        data = rdt.readArtifact('mosaicGLM_apricot_sbc', 'type', 'mat');
-        mosaicGLM = data.mosaicGLM;
+%         rdt.crp('resources/data/rgc/apricot');
+%         data = rdt.readArtifact('mosaicGLM_apricot_sbc', 'type', 'mat');
+%         mosaicGLM = data.mosaicGLM;
+        load('dat/mosaicGLM_apricot_sbc.mat');
         scaleFactor = scaleFactorArr(5);
 end
 
