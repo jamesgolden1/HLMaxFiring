@@ -10,15 +10,30 @@
 
 % For midgets, 1 pixel per degree under 10 degrees ecc
 
+
+%%%%%%%%%% TO DO
+% This is dendritic field - add factor for RF?
+% Check that this is ON midget type spacing
+
+% Typically we are concerned with the spacing within one class, in which
+% case density is halved and the spacings should be multiplied by sqrt2.
+
+% scale factor = ['on parasol', 'off parasol', 'on midget', 'off midget', 'sbc]
+% scale factor = [18.92 0.85*18.9211 10.76 0.85*10.7629 20]
+% scale midget = mean([10.76 0.85*10.7629]) = 9.95
+% scaleFactor = [18.92 0.85*18.9211 10.76 0.85*10.7629 20]./9.95
 %% Choose cell type
 % This sets the size of the STAs for individual cells
 
-% cellType = 'on parasol';
-cellType = 'off parasol';
+cellType = 'on parasol';
+% cellType = 'off parasol';
 % cellType = 'on midget';
 % cellType = 'off midget';
 % cellType = 'on sbc';
 
+% Spatial scale factor by type
+% scaleFactorArr = ['on parasol', 'off parasol', 'on midget', 'off midget', 'sbc]
+scaleFactorArr = [18.92 0.85*18.9211 10.76 0.85*10.7629 20]./9.95;
 %% Add paths - isetbio, HLMaxFiring, RemoteDataToolbox
 % addpath(genpath(isetbioRootPath))
 
@@ -50,22 +65,27 @@ switch ieParamFormat(cellType)
         rdt.crp('resources/data/rgc/apricot');
         data = rdt.readArtifact('mosaicGLM_apricot_ONParasol', 'type', 'mat');
         mosaicGLM = data.mosaicGLM;
+        scaleFactor = scaleFactorArr(1);
     case{'offparasol'}
         rdt.crp('resources/data/rgc/apricot');
         data = rdt.readArtifact('mosaicGLM_apricot_OFFParasol', 'type', 'mat');
         mosaicGLM = data.mosaicGLM;
+        scaleFactor = scaleFactorArr(2);
     case{'onmidget'}
         rdt.crp('resources/data/rgc/apricot');
         data = rdt.readArtifact('mosaicGLM_apricot_ONMidget', 'type', 'mat');
         mosaicGLM = data.mosaicGLM;
+        scaleFactor = scaleFactorArr(3);
     case{'offmidget'}
         rdt.crp('resources/data/rgc/apricot');      
         data = rdt.readArtifact('mosaicGLM_apricot_OFFMidget', 'type', 'mat');
         mosaicGLM = data.mosaicGLM;
+        scaleFactor = scaleFactorArr(4);
     case{'onsbc','sbc'}
         rdt.crp('resources/data/rgc/apricot');
         data = rdt.readArtifact('mosaicGLM_apricot_sbc', 'type', 'mat');
         mosaicGLM = data.mosaicGLM;
+        scaleFactor = scaleFactorArr(5);
 end
 
 % Take mean impulse response function (IRF) over all the cells in the mosaic
@@ -95,11 +115,11 @@ rfRadius = 5;
 % There is an asymmetry in the size of RGC RFs over the retina
 
 % CHECK SUPERIOR/INFERIOR
-rgcDiameterLUT = watsonRGCSpacing;
+rgcDiameterLUT = scaleFactor*sqrt(2)*watsonRGCSpacing;
 
 % degStart = -27.5; degEnd = 27.5;
 % degarr = [-27.5 : (degEnd-degStart)/1080 : 27.5];
-% contourf(degarr,degarr,smf0',[0:max(smf(:))/20:max(smf(:))] ); axis square
+% contourf(degarr,degarr,rgcDiameterLUT',[0:max(rgcDiameterLUT(:))/20:max(rgcDiameterLUT(:))] ); axis square
 % title(sprintf('Human Midget RGC RF Size (degrees)')); colorbar; 
 
 %% Add to big movie
@@ -130,7 +150,7 @@ end
 
 % Loop over eccentricities, put STA stim at individual positions
 
-nAngles = 96;
+nAngles = 128;
 angleNoise = 0.5;
 eccNoise   = 2.5;
 
@@ -145,13 +165,15 @@ for ecc = eccArr;
 %     for xc = [-1:.25/1:1]
 %         for yc = [-1:.25/1:1]
     for theta = [0 : 2*pi / nAngles : 2*pi - 2*pi/nAngles]
+        
+        % Convert theta to x,y coordinates with some angular noise
         xc = cos(theta) + angleNoise*(1/2)*(rand(1,1)-.5); 
-        yc = sin(theta) + angleNoise*(1/2)*(rand(1,1)-.5);;
+        yc = sin(theta) + angleNoise*(1/2)*(rand(1,1)-.5);
             if ~(xc == 0 && yc == 0)
                 
                 % Add some noise to the position
-                xcr = xc + 0*ecc*(1/2)*(rand(1,1)-.5);
-                ycr = yc + 0*ecc*(1/2)*(rand(1,1)-.5);
+                xcr = xc;% + 0*ecc*(1/2)*(rand(1,1)-.5);
+                ycr = yc;% + 0*ecc*(1/2)*(rand(1,1)-.5);
                 nv = norm([xcr ycr]); 
                 xcn = xcr/nv; ycn = ycr/nv;
                 
@@ -169,7 +191,7 @@ for ecc = eccArr;
                 
                 % Build spatial RF according to diameter
                 % If less than one pixel, only use one pixel
-                if ecc>5
+                if ecc>5/sqrt(2)
                     [so, spatialRFonedim, magnitude1STD] = buildSpatialRF(rgcRadiusPixels);
                     so = so./max(abs(so(:)));
                 else
@@ -195,6 +217,15 @@ for ecc = eccArr;
                     movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfMean)-1) = ...
                         movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfMean)-1) + (sta3);
                 
+                    
+%                     % Choose random starting time points for stimulus
+%                 rstart = round((200-15)*rand(5,1))+1;
+%                 
+%                 for tind = 1:length(rstart)
+%                     movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart(tind):rstart(tind)+length(irfMean)-1) = ...
+%                         movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart(tind):rstart(tind)+length(irfMean)-1) + (sta3);
+%                 end
+
             end
 %         end
     end
