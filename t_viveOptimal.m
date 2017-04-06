@@ -25,8 +25,8 @@
 %% Choose cell type
 % This sets the size of the STAs for individual cells
 
-cellType = 'on parasol';
-% cellType = 'off parasol';
+% cellType = 'on parasol';
+cellType = 'off parasol';
 % cellType = 'on midget';
 % cellType = 'off midget';
 % cellType = 'on sbc';
@@ -34,6 +34,7 @@ cellType = 'on parasol';
 % Spatial scale factor by type
 % scaleFactorArr = ['on parasol', 'off parasol', 'on midget', 'off midget', 'sbc]
 scaleFactorArr = [18.92 0.85*18.9211 10.76 0.85*10.7629 20]./9.95;
+
 %% Add paths - isetbio, HLMaxFiring, RemoteDataToolbox
 % addpath(genpath(isetbioRootPath))
 
@@ -42,18 +43,22 @@ scaleFactorArr = [18.92 0.85*18.9211 10.76 0.85*10.7629 20]./9.95;
 % Set size of movie, based on Vive specs:
 % 1080x1200 per eye, 2160x1200 total
 
-szRows = 1080; szCols = 1200;
-%frames = 250;
-frames = 270;
+zeroPad = 0;
+szCols = 1080+zeroPad; szRows = 1200+zeroPad;
+frames = 250;
+
+% Binocular field of view (FOV)
+fovCols = 110; % horizontal fov in degrees for vive: http://doc-ok.org/?p=1414
+fovRows = 122;
 
 % % movieBig = 128*uint8(ones(szRows,szCols,frames));
 % movieBig = single(zeros(szRows,szCols,frames));
 
 % 2160 pixels = 110 degrees
 % 19.6364 pixels per degree
-pixelsPerDegree = 2160/110;
+pixelsPerDegree = szCols/fovCols;
 % 0.0509 degrees per pixel
-degreesPerPixel = 110/2160;
+degreesPerPixel = fovCols/szCols;
 
 %% Get temporal response from physiology data
 
@@ -61,32 +66,32 @@ degreesPerPixel = 110/2160;
 % rdt = RdtClient('isetbio');
 
 % Get data for chosen cell type
-switch ieParamFormat(cellType)
-    case{'onparasol'}
+switch (cellType)
+    case{'on parasol'}
 %         rdt.crp('resources/data/rgc/apricot');
 %         data = rdt.readArtifact('mosaicGLM_apricot_ONParasol', 'type', 'mat');
 %         mosaicGLM = data.mosaicGLM;
         load('dat/mosaicGLM_apricot_ONParasol.mat');
         scaleFactor = scaleFactorArr(1);
-    case{'offparasol'}
+    case{'off parasol'}
 %         rdt.crp('resources/data/rgc/apricot');
 %         data = rdt.readArtifact('mosaicGLM_apricot_OFFParasol', 'type', 'mat');
 %         mosaicGLM = data.mosaicGLM;
         load('dat/mosaicGLM_apricot_OFFParasol.mat');
         scaleFactor = scaleFactorArr(2);
-    case{'onmidget'}
+    case{'on midget'}
 %         rdt.crp('resources/data/rgc/apricot');
 %         data = rdt.readArtifact('mosaicGLM_apricot_ONMidget', 'type', 'mat');
 %         mosaicGLM = data.mosaicGLM;
         load('dat/mosaicGLM_apricot_ONMidget.mat');
         scaleFactor = scaleFactorArr(3);
-    case{'offmidget'}
+    case{'off midget'}
 %         rdt.crp('resources/data/rgc/apricot');      
 %         data = rdt.readArtifact('mosaicGLM_apricot_OFFMidget', 'type', 'mat');
 %         mosaicGLM = data.mosaicGLM;
         load('dat/mosaicGLM_apricot_OFFMidget.mat');
         scaleFactor = scaleFactorArr(4);
-    case{'onsbc','sbc'}
+    case{'on sbc','sbc'}
 %         rdt.crp('resources/data/rgc/apricot');
 %         data = rdt.readArtifact('mosaicGLM_apricot_sbc', 'type', 'mat');
 %         mosaicGLM = data.mosaicGLM;
@@ -106,7 +111,7 @@ figure; plot([0:-1+size(irf,2)]/60.5,mean(irf));
 irfMean = mean(irf);
 
 % Make the peak IRF negative for off cells
-switch ieParamFormat(cellType)
+switch (cellType)
     case{'offparasol','offmidget'}
         irfMean = -irfMean;
 end
@@ -121,7 +126,7 @@ rfRadius = 5;
 % There is an asymmetry in the size of RGC RFs over the retina
 
 % CHECK SUPERIOR/INFERIOR
-rgcDiameterLUT = scaleFactor*sqrt(2)*watsonRGCSpacing;
+rgcDiameterLUT = scaleFactor*sqrt(2)*watsonRGCSpacing(szCols,szCols,fovRows)';
 
 % degStart = -27.5; degEnd = 27.5;
 % degarr = [-27.5 : (degEnd-degStart)/1080 : 27.5];
@@ -136,14 +141,14 @@ movieBig = single(zeros(szRows,szCols,frames));
 eccind = 0;
 
 % Set center - Vive display is 55 degrees per eye
-degCenterX = 27.5; degCenterY = 27.5;
+degCenterX = fovRows/2; degCenterY = fovCols/2;
 
 % Set array of eccentricity values at which to put STA stimulus
-eccArr = [1:1:26.5];
+eccArr = [1:1:fovCols/2 - 0];
 % eccArr = [.1:.25:5 5:.5:10 10:1:27.5];
 
 % Scale the sRF appropriately by cell type
-switch ieParamFormat(cellType)
+switch (cellType)
     case{'onparasol'}
         sRFmultFactor = 2;
     case{'offparasol'}
@@ -157,8 +162,8 @@ end
 % Loop over eccentricities, put STA stim at individual positions
 
 nAngles = 128;
-angleNoise = 0.5;
-eccNoise   = 2.5;
+angleNoise = 0;%0.5;
+eccNoise   = 0;%2.5;
 
 
 for ecc = eccArr;
@@ -191,14 +196,22 @@ for ecc = eccArr;
                 pixelY = degY*pixelsPerDegree + degY*eccNoise*(1/2)*(rand(1,1)-.5);
 
                 % Get RGC RF diameter from LUT
-                rgcDiameterDegrees = sRFmultFactor*rgcDiameterLUT(round(pixelX),round(pixelY));
+                LUTshift = (szRows - size(rgcDiameterLUT,1)+1)/2;
+                %disp(-LUTshift+round(pixelX));
+                %disp(round(pixelY));
+                if (-LUTshift+round(pixelX)) > 0
+                    rgcDiameterDegrees = sRFmultFactor*rgcDiameterLUT(-LUTshift+round(pixelX),round(pixelY));
+                else
+                    rgcDiameterDegrees = sRFmultFactor*rgcDiameterLUT(1,round(pixelY));
+                end
                 rgcDiameterPixels = rgcDiameterDegrees*pixelsPerDegree;
 
                 rgcRadiusPixels = rgcDiameterPixels/2;
 
                 % Build spatial RF according to diameter
                 % If less than one pixel, only use one pixel
-                if ecc>5/sqrt(2)
+                % if ecc>5/(scaleFactor*sqrt(2))
+                if rgcDiameterDegrees > degreesPerPixel
                     [so, spatialRFonedim, magnitude1STD] = buildSpatialRF(rgcRadiusPixels);
                     so = so./max(abs(so(:)));
                 else
@@ -241,7 +254,21 @@ for ecc = eccArr;
     
 end
 
-figure; imagesc(sum(movieBig,3)); colormap gray;
+figure; imagesc(sum(movieBig,3)); colormap gray; axis equal
+
+%%
+moviePiece = movieBig(:,:,50+[1:50]);
+maxMovie = max(abs(moviePiece(:)));
+medMovie = median(moviePiece(:));
+clear moviePiece
+
+movieSmall = uint8(128 + 127*movieBig/maxMovie);
+
+movieSmall(end,end,:) = 128; movieSmall(end-1,end,:) = 128;
+figure; imagesc(sum(movieSmall,3)); colormap gray; axis equal
+
+% clear movieBig
+
 %% Show movie and save
 
 % p.save = false;% 
@@ -250,8 +277,19 @@ p.vname = 'C:/Users/laha/Documents/GitHub/HLMaxFiring/test.avi';
 p.FrameRate = 90;
 figure; 
 set(gcf,'position',[1000         157        1411        1181]);
-disp('test1')
-%ieMovie(movieBig(:,:,1:100), p);
-ieMovie(movieBig, p);
-disp('test2')
 
+%disp('test1')
+%ieMovie(movieBig(:,:,1:100), p);
+%ieMovie(movieBig, p);
+%disp('test2')
+
+% ieMovie(movieBig(:,:,1:100));
+% ieMovie(movieSmall(:,:,1:100));
+
+movieSmall(end,end,:) = 0; movieSmall(end-1,end,:) = 255;
+
+for fr = 1:100
+%     imagesc(movieBig(:,:,fr)); colormap gray    
+    imagesc(movieSmall(:,:,fr)); colormap gray
+    drawnow;
+end
