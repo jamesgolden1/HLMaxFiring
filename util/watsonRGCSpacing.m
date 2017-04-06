@@ -1,4 +1,4 @@
-function smf0 = watsonRGCSpacing
+function smf0 = watsonRGCSpacing(rows,cols,fovCols)
 
 % A formula for human retinal ganglion cell receptive field density as a function of visual field location
 % Andrew Watson, Journal of Vision, June 2014, Vol.14, 15. doi:10.1167/14.7.15
@@ -104,8 +104,13 @@ clear smf
 xctr = 0; yctr = 0;
 % for x = .1:.1:1
 % degarr = [-40:.25:40];
-degStart = -27.5; degEnd = 27.5;
-degarr = [-27.5 : (degEnd-degStart)/1080 : 27.5];
+
+% degStart = -27.5; degEnd = 27.5;
+% degarr = [-27.5 : (degEnd-degStart)/1080 : 27.5];
+
+degStart = -fovCols/2; degEnd = fovCols/2;
+degarr = [degStart: (degEnd-degStart)/cols : degEnd];
+
 for x = degarr
     xctr = xctr+1;
     yctr = 0;
