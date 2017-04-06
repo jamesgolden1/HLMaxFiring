@@ -43,7 +43,8 @@ scaleFactorArr = [18.92 0.85*18.9211 10.76 0.85*10.7629 20]./9.95;
 % 1080x1200 per eye, 2160x1200 total
 
 szRows = 1080; szCols = 1200;
-frames = 250;
+%frames = 250;
+frames = 270;
 
 % % movieBig = 128*uint8(ones(szRows,szCols,frames));
 % movieBig = single(zeros(szRows,szCols,frames));
@@ -162,38 +163,39 @@ eccNoise   = 2.5;
 
 for ecc = eccArr;
     eccind = eccind+1; 
-    
+
     % Display how much has been done, how much to go
     [eccind length(eccArr)]    
     
     % xc = ecc*sin(theta), yc = ecc*cos(theta)
 %     for xc = [-1:.25/1:1]
 %         for yc = [-1:.25/1:1]
+
     for theta = [0 : 2*pi / nAngles : 2*pi - 2*pi/nAngles]
-        
+
         % Convert theta to x,y coordinates with some angular noise
         xc = cos(theta) + angleNoise*(1/2)*(rand(1,1)-.5); 
         yc = sin(theta) + angleNoise*(1/2)*(rand(1,1)-.5);
             if ~(xc == 0 && yc == 0)
-                
+
                 % Add some noise to the position
                 xcr = xc;% + 0*ecc*(1/2)*(rand(1,1)-.5);
                 ycr = yc;% + 0*ecc*(1/2)*(rand(1,1)-.5);
                 nv = norm([xcr ycr]); 
                 xcn = xcr/nv; ycn = ycr/nv;
-                
+
                 % Get position in pixels instead of degrees
                 degX = degCenterX + ecc*xcn;%ecc*(1 + eccNoise*(1/2)*(rand(1,1)-.5));%*xcn; 
                 pixelX = degX*pixelsPerDegree + degX*eccNoise*(1/2)*(rand(1,1)-.5);                
                 degY = degCenterY + ecc*ycn; %ecc*(1 + eccNoise*(1/2)*(rand(1,1)-.5));%ecc*ycn; 
                 pixelY = degY*pixelsPerDegree + degY*eccNoise*(1/2)*(rand(1,1)-.5);
-                
+
                 % Get RGC RF diameter from LUT
                 rgcDiameterDegrees = sRFmultFactor*rgcDiameterLUT(round(pixelX),round(pixelY));
                 rgcDiameterPixels = rgcDiameterDegrees*pixelsPerDegree;
-                
+
                 rgcRadiusPixels = rgcDiameterPixels/2;
-                
+
                 % Build spatial RF according to diameter
                 % If less than one pixel, only use one pixel
                 if ecc>5/sqrt(2)
@@ -202,27 +204,29 @@ for ecc = eccArr;
                 else
                     so = 1;
                 end
-                
+
                 % Add temporal resopnse
                 sta = so(:)*irfMean;
                 % sta3 = round(128+127* (reshape(sta,[size(so,1),size(so,2),size(irfMean,2)]))./max(abs(sta(:))) );
                 sta3 = ( (reshape(sta,[size(so,1),size(so,2),size(irfMean,2)])) );
-                
+
                 % Get start and end position values for adding in STA
                 % stimulus
                 xcvecst = pixelX - ceil(size(sta3,1)/2) + 1;
                 xcvecend = pixelX + floor(size(sta3,1)/2);
                 ycvecst = pixelY - ceil(size(sta3,1)/2) + 1;
                 ycvecend = pixelY + floor(size(sta3,1)/2);
-                
+
                 % Choose random starting time points for stimulus
                 rstart = round((200-1)*rand(12,1))+1;
-                
-                tind = 1;%:2
-                    movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfMean)-1) = ...
-                        movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfMean)-1) + (sta3);
-                
-                    
+
+                if eccind < (length(eccArr) - 2)
+                    tind = 1;%:2
+                        movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfMean)-1) = ...
+                            movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfMean)-1) + (sta3);
+                end
+
+
 %                     % Choose random starting time points for stimulus
 %                 rstart = round((200-15)*rand(5,1))+1;
 %                 
@@ -232,18 +236,22 @@ for ecc = eccArr;
 %                 end
 
             end
-%         end
+    %         end
     end
     
 end
 
 figure; imagesc(sum(movieBig,3)); colormap gray;
-
 %% Show movie and save
 
 % p.save = false;% 
-% p.vname = '/Users/bireswarlaha/Box Sync/Neuro/regen/stimVideo/maxFireStim1_OffParasol.avi';
+p.save = true;
+p.vname = 'C:/Users/laha/Documents/GitHub/HLMaxFiring/test.avi';
+p.FrameRate = 90;
 figure; 
 set(gcf,'position',[1000         157        1411        1181]);
-ieMovie(movieBig(:,:,1:100));
+disp('test1')
+%ieMovie(movieBig(:,:,1:100), p);
+ieMovie(movieBig, p);
+disp('test2')
 
