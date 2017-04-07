@@ -43,9 +43,17 @@ scaleFactorArr = [18.92 0.85*18.9211 10.76 0.85*10.7629 20]./9.95;
 % Set size of movie, based on Vive specs:
 % 1080x1200 per eye, 2160x1200 total
 
+eyeLateral = 'left';
+% eyeLateral = 'right';
+
 zeroPad = 0;
 szCols = 1080+zeroPad; szRows = 1200+zeroPad;
-frames = 250;
+disp(['szCols:' num2str(round(szCols))]);
+disp(['szRows:' num2str(round(szRows))]);
+
+frames = 270;
+
+fps = 20; % frames per second
 
 % Binocular field of view (FOV)
 fovCols = 110; % horizontal fov in degrees for vive: http://doc-ok.org/?p=1414
@@ -116,6 +124,8 @@ switch (cellType)
         irfMean = -irfMean;
 end
 
+irfInterp = interp1([0:-1+size(irf,2)]/60.5,irfMean,[0:1/fps:0.2]);
+
 %% Test spatial response
 rfRadius = 5;
 [so, spatialRFonedim, magnitude1STD] = buildSpatialRF(rfRadius);
@@ -128,9 +138,11 @@ rfRadius = 5;
 % CHECK SUPERIOR/INFERIOR
 rgcDiameterLUT = scaleFactor*sqrt(2)*watsonRGCSpacing(szCols,szCols,fovRows)';
 
-% degStart = -27.5; degEnd = 27.5;
-% degarr = [-27.5 : (degEnd-degStart)/1080 : 27.5];
-% contourf(degarr,degarr,rgcDiameterLUT',[0:max(rgcDiameterLUT(:))/20:max(rgcDiameterLUT(:))] ); axis square
+if strcmpi(eyeLateral,'right'); rgcDiameterLUT = fliplr(rgcDiameterLUT); end
+
+degStart = -fovCols/2; degEnd = fovCols/2;
+degarr = [degStart: (degEnd-degStart)/szCols : degEnd];
+contourf(degarr,degarr,rgcDiameterLUT,[0:max(rgcDiameterLUT(:))/20:max(rgcDiameterLUT(:))] ); axis square
 % title(sprintf('Human Midget RGC RF Size (degrees)')); colorbar; 
 
 %% Add to big movie
@@ -219,9 +231,9 @@ for ecc = eccArr;
                 end
 
                 % Add temporal resopnse
-                sta = so(:)*irfMean;
+                sta = so(:)*irfInterp;
                 % sta3 = round(128+127* (reshape(sta,[size(so,1),size(so,2),size(irfMean,2)]))./max(abs(sta(:))) );
-                sta3 = ( (reshape(sta,[size(so,1),size(so,2),size(irfMean,2)])) );
+                sta3 = ( (reshape(sta,[size(so,1),size(so,2),size(irfInterp,2)])) );
 
                 % Get start and end position values for adding in STA
                 % stimulus
@@ -235,8 +247,8 @@ for ecc = eccArr;
 
                 if eccind < (length(eccArr) - 2)
                     tind = 1;%:2
-                        movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfMean)-1) = ...
-                            movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfMean)-1) + (sta3);
+                        movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfInterp)-1) = ...
+                            movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfInterp)-1) + (sta3);
                 end
 
 
@@ -254,7 +266,23 @@ for ecc = eccArr;
     
 end
 
-figure; imagesc(sum(movieBig,3)); colormap gray; axis equal
+figure; imagesc(-szRows/2+1:szRows/2,-szCols/2+1:szCols/2,sum(movieBig,3)); colormap gray; 
+axis(2*[-100 100 -100 100]); axis equal
+
+%% Check size of RFs
+figure; 
+subplot(122);
+imagesc(-szRows/2+1:szRows/2,-szCols/2+1:szCols/2,sum(movieBig,3)); colormap gray; 
+axis equal; 
+axis(2*[-100 100 -100 100]);
+caxis([-.5 .75]);
+subplot(121); 
+% contourf(-szRows/2+1:szRows/2,-szCols/2+1:szCols/2,rgcDiameterLUT);
+contourf(pixelsPerDegree*degarr,pixelsPerDegree*degarr,rgcDiameterLUT,[0:max(rgcDiameterLUT(:))/100:max(rgcDiameterLUT(:))] ); axis equal
+colormap parula
+axis equal;  
+axis(2*[-100 100 -100 100]); 
+caxis([0 1]);
 
 %%
 moviePiece = movieBig(:,:,50+[1:50]);
@@ -270,12 +298,13 @@ figure; imagesc(sum(movieSmall,3)); colormap gray; axis equal
 % clear movieBig
 
 %% Show movie and save
-
+disp('creating movie now...');
 % p.save = false;% 
 p.save = true;
 % p.vname = 'C:/Users/laha/Documents/GitHub/HLMaxFiring/test.avi';
-p.vname = 'test.avi';
-p.FrameRate = 90;
+p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_April7_fps' num2str(fps) '.avi'];
+% p.vname = 'test_April7.avi';
+p.FrameRate = fps;
 figure; 
 % set(gcf,'position',[1000         157        1411        1181]);
 
@@ -295,17 +324,20 @@ if p.save
     vObj.FrameRate = p.FrameRate;
     vObj.Quality = 100;
     open(vObj);
-end
+% end
 
-for fr = 1:10
+for fr = 1:size(movieSmall,3)
 %     imagesc(movieBig(:,:,fr)); colormap gray    
     imagesc(movieSmall(:,:,fr)); colormap gray; axis image; set(gca,'xticklabel','','yticklabel','');
-    if p.save,  F = getframe(gca,[0 0 szRows szRows]); writeVideo(vObj,F); end
+    if p.save  
+        F = getframe;%(gca);%,[0 0 szRows szRows]); 
+        writeVideo(vObj,F); 
+    end
 %     drawnow;
 end
 
 % Write the video object if save is true
-if p.save
+% if p.save
     writeVideo(vObj,F);
     close(vObj);
 end
