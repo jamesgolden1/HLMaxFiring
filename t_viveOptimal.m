@@ -144,7 +144,7 @@ eccind = 0;
 degCenterX = fovRows/2; degCenterY = fovCols/2;
 
 % Set array of eccentricity values at which to put STA stimulus
-eccArr = [1:1:fovCols/2 - 0];
+eccArr = [1:1:fovCols/2 - 2];
 % eccArr = [.1:.25:5 5:.5:10 10:1:27.5];
 
 % Scale the sRF appropriately by cell type
@@ -161,7 +161,7 @@ end
 
 % Loop over eccentricities, put STA stim at individual positions
 
-nAngles = 128;
+nAngles = 128/2;
 angleNoise = 0;%0.5;
 eccNoise   = 0;%2.5;
 
@@ -273,10 +273,11 @@ figure; imagesc(sum(movieSmall,3)); colormap gray; axis equal
 
 % p.save = false;% 
 p.save = true;
-p.vname = 'C:/Users/laha/Documents/GitHub/HLMaxFiring/test.avi';
+% p.vname = 'C:/Users/laha/Documents/GitHub/HLMaxFiring/test.avi';
+p.vname = 'test.avi';
 p.FrameRate = 90;
 figure; 
-set(gcf,'position',[1000         157        1411        1181]);
+% set(gcf,'position',[1000         157        1411        1181]);
 
 %disp('test1')
 %ieMovie(movieBig(:,:,1:100), p);
@@ -288,8 +289,23 @@ set(gcf,'position',[1000         157        1411        1181]);
 
 movieSmall(end,end,:) = 0; movieSmall(end-1,end,:) = 255;
 
-for fr = 1:100
+
+if p.save
+    vObj = VideoWriter(p.vname);
+    vObj.FrameRate = p.FrameRate;
+    vObj.Quality = 100;
+    open(vObj);
+end
+
+for fr = 1:10
 %     imagesc(movieBig(:,:,fr)); colormap gray    
-    imagesc(movieSmall(:,:,fr)); colormap gray
-    drawnow;
+    imagesc(movieSmall(:,:,fr)); colormap gray; axis image; set(gca,'xticklabel','','yticklabel','');
+    if p.save,  F = getframe(gca,[0 0 szRows szRows]); writeVideo(vObj,F); end
+%     drawnow;
+end
+
+% Write the video object if save is true
+if p.save
+    writeVideo(vObj,F);
+    close(vObj);
 end

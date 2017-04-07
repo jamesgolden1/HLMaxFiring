@@ -150,7 +150,7 @@ figure;
 contourf(degarr,degarr,smf0',[0:max(smf(:))/20:max(smf(:))] ); axis square
 title(sprintf('Human Midget RGC RF Size (degrees)')); colorbar; 
 
-xlabel(sprintf('Eccentricity (degrees)\nNasal <---------------------> Temporal')); 
+xlabel(sprintf('Eccentricity (degrees)\nTemporal <---------------------> Nasal')); 
 ylabel(sprintf('Eccentricity (degrees)\nInferior <---------------------> Superior'));
 set(gca,'fontsize',14);
 
