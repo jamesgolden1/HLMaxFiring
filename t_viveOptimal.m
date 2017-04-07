@@ -47,7 +47,7 @@ eyeLateral = 'left';
 % eyeLateral = 'right';
 
 zeroPad = 0;
-szCols = 1080+zeroPad; szRows = 1200+zeroPad;
+szCols = 1080+zeroPad; szRows = 1080+zeroPad;
 disp(['szCols:' num2str(round(szCols))]);
 disp(['szRows:' num2str(round(szRows))]);
 
@@ -57,7 +57,7 @@ fps = 90; % frames per second
 
 % Binocular field of view (FOV)
 fovCols = 110; % horizontal fov in degrees for vive: http://doc-ok.org/?p=1414
-fovRows = 122;
+fovRows = 110;%122;
 
 % % movieBig = 128*uint8(ones(szRows,szCols,frames));
 % movieBig = single(zeros(szRows,szCols,frames));
@@ -325,18 +325,19 @@ movieSmall(end,end,:) = 0; movieSmall(end-1,end,:) = 255;
 
 
 if p.save
-    vObj = VideoWriter(p.vname);
+    vObj = VideoWriter(p.vname);%,'Uncompressed AVI');
     vObj.FrameRate = p.FrameRate;
     vObj.Quality = 100;
     open(vObj);
 % end
 
-for fr = 1:5%size(movieSmall,3)
+for fr = 1:size(movieSmall,3)
 %     imagesc(movieBig(:,:,fr)); colormap gray    
-    imagesc(movieSmall(:,:,fr)); colormap gray; 
+%     imagesc(movieSmall(:,:,fr)); colormap gray; 
 %     axis image; set(gca,'xticklabel','','yticklabel','');
     if p.save  
-        F = getframe(gca);%,[0 0 szRows szCols]); 
+%         F = getframe(gca);%,[0 0 szRows szCols]); 
+        F = movieSmall(:,:,fr);
         writeVideo(vObj,F); 
     end
 %     drawnow;
@@ -344,6 +345,5 @@ end
 
 % Write the video object if save is true
 % if p.save
-    writeVideo(vObj,F);
     close(vObj);
 end
