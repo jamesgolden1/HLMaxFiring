@@ -336,7 +336,7 @@ for fr = 1:5%size(movieSmall,3)
     imagesc(movieSmall(:,:,fr)); colormap gray; 
 %     axis image; set(gca,'xticklabel','','yticklabel','');
     if p.save  
-        F = getframe(gca,[0 0 szRows szCols]); 
+        F = getframe(gca);%,[0 0 szRows szCols]); 
         writeVideo(vObj,F); 
     end
 %     drawnow;
