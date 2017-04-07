@@ -1,6 +1,6 @@
 % t_viveOptimal
 % 
-% Build the optimal RGC stimulus for one of the HTC Vive
+% Build the optimal RGC stimulus for one eye of the HTC Vive
 
 % Vive specs:
 % 1080x1200 per eye, 2160x1200 total
@@ -53,7 +53,7 @@ disp(['szRows:' num2str(round(szRows))]);
 
 frames = 270;
 
-fps = 20; % frames per second
+fps = 90; % frames per second
 
 % Binocular field of view (FOV)
 fovCols = 110; % horizontal fov in degrees for vive: http://doc-ok.org/?p=1414
@@ -62,10 +62,10 @@ fovRows = 122;
 % % movieBig = 128*uint8(ones(szRows,szCols,frames));
 % movieBig = single(zeros(szRows,szCols,frames));
 
-% 2160 pixels = 110 degrees
-% 19.6364 pixels per degree
+% 2160/2 pixels = 110 degrees
+% 9.82 pixels per degree
 pixelsPerDegree = szCols/fovCols;
-% 0.0509 degrees per pixel
+% 0.1019 degrees per pixel
 degreesPerPixel = fovCols/szCols;
 
 %% Get temporal response from physiology data
@@ -270,6 +270,9 @@ figure; imagesc(-szRows/2+1:szRows/2,-szCols/2+1:szCols/2,sum(movieBig,3)); colo
 axis(2*[-100 100 -100 100]); axis equal
 
 %% Check size of RFs
+
+checkFlag = 0;
+if checkFlag
 figure; 
 subplot(122);
 imagesc(-szRows/2+1:szRows/2,-szCols/2+1:szCols/2,sum(movieBig,3)); colormap gray; 
@@ -283,8 +286,9 @@ colormap parula
 axis equal;  
 axis(2*[-100 100 -100 100]); 
 caxis([0 1]);
+end
 
-%%
+%% Plot sum of frames over time
 moviePiece = movieBig(:,:,50+[1:50]);
 maxMovie = max(abs(moviePiece(:)));
 medMovie = median(moviePiece(:));
@@ -301,12 +305,13 @@ figure; imagesc(sum(movieSmall,3)); colormap gray; axis equal
 disp('creating movie now...');
 % p.save = false;% 
 p.save = true;
-% p.vname = 'C:/Users/laha/Documents/GitHub/HLMaxFiring/test.avi';
-p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_April7_fps' num2str(fps) '.avi'];
+p.vname = ['/Users/james/Documents/matlab/HLMaxFiring/test_April7_fps' num2str(fps) '.avi']
+% p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_April7_fps' num2str(fps) '.avi'];
 % p.vname = 'test_April7.avi';
 p.FrameRate = fps;
 figure; 
 % set(gcf,'position',[1000         157        1411        1181]);
+set(gcf,'position',[0 0   szRows   szCols]);
 
 %disp('test1')
 %ieMovie(movieBig(:,:,1:100), p);
@@ -326,11 +331,12 @@ if p.save
     open(vObj);
 % end
 
-for fr = 1:size(movieSmall,3)
+for fr = 1:5%size(movieSmall,3)
 %     imagesc(movieBig(:,:,fr)); colormap gray    
-    imagesc(movieSmall(:,:,fr)); colormap gray; axis image; set(gca,'xticklabel','','yticklabel','');
+    imagesc(movieSmall(:,:,fr)); colormap gray; 
+%     axis image; set(gca,'xticklabel','','yticklabel','');
     if p.save  
-        F = getframe;%(gca);%,[0 0 szRows szRows]); 
+        F = getframe(gca,[0 0 szRows szCols]); 
         writeVideo(vObj,F); 
     end
 %     drawnow;
