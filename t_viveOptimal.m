@@ -29,11 +29,11 @@ close all;
 
 % This sets the size of the STAs for individual cells
 
-cellType = 'on parasol';
+% cellType = 'on parasol';
 % cellType = 'off parasol';
 % cellType = 'on midget';
 % cellType = 'off midget';
-% cellType = 'on sbc';
+cellType = 'on sbc';
 
 % Spatial scale factor by type
 % scaleFactorArr = ['on parasol', 'off parasol', 'on midget', 'off midget', 'sbc]
@@ -316,8 +316,9 @@ title('Check for on vs. off center');
 disp('creating movie now...');
 % p.save = false;% 
 p.save = true;
-p.vname = ['C:/Users/laha/Documents/GitHub/HLMaxFiring/' cellType '_fps' num2str(fps) '.avi']
-% p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_April7_fps' num2str(fps) '.avi'];
+% p.vname = ['C:/Users/laha/Documents/GitHub/HLMaxFiring/' cellType '_fps' num2str(fps) '.avi']
+% p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_fps' num2str(fps) '.avi'];
+p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\sbc2.avi'];
 % p.vname = 'test_April7.avi';
 p.FrameRate = fps;
 % figure; 
