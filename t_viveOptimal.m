@@ -23,10 +23,14 @@
 % scale midget = mean([10.76 0.85*10.7629]) = 9.95
 % scaleFactor = [18.92 0.85*18.9211 10.76 0.85*10.7629 20]./9.95
 %% Choose cell type
+
+clear;
+close all;
+
 % This sets the size of the STAs for individual cells
 
-% cellType = 'on parasol';
-cellType = 'off parasol';
+cellType = 'on parasol';
+% cellType = 'off parasol';
 % cellType = 'on midget';
 % cellType = 'off midget';
 % cellType = 'on sbc';
@@ -51,9 +55,11 @@ szCols = 1080+zeroPad; szRows = 1080+zeroPad;
 disp(['szCols:' num2str(round(szCols))]);
 disp(['szRows:' num2str(round(szRows))]);
 
-frames = 270;
+timeLength = 20; % seconds
 
-fps = 90; % frames per second
+fps = 30; % frames per second
+frames = timeLength*fps;
+
 
 % Binocular field of view (FOV)
 fovCols = 110; % horizontal fov in degrees for vive: http://doc-ok.org/?p=1414
@@ -120,7 +126,7 @@ irfMean = mean(irf);
 
 % Make the peak IRF negative for off cells
 switch (cellType)
-    case{'offparasol','offmidget'}
+    case{'off parasol','off midget'}
         irfMean = -irfMean;
 end
 
@@ -173,7 +179,7 @@ end
 
 % Loop over eccentricities, put STA stim at individual positions
 
-nAngles = 128/2;
+nAngles = 128;
 angleNoise = 0;%0.5;
 eccNoise   = 0;%2.5;
 
@@ -182,7 +188,7 @@ for ecc = eccArr;
     eccind = eccind+1; 
 
     % Display how much has been done, how much to go
-    [eccind length(eccArr)]    
+    % [eccind length(eccArr)]    
     
     % xc = ecc*sin(theta), yc = ecc*cos(theta)
 %     for xc = [-1:.25/1:1]
@@ -243,12 +249,14 @@ for ecc = eccArr;
                 ycvecend = pixelY + floor(size(sta3,1)/2);
 
                 % Choose random starting time points for stimulus
-                rstart = round((200-1)*rand(12,1))+1;
+                nInd = 12;
+                rstart = round((timeLength*fps-20)*rand(nInd,1))+1;
 
                 if eccind < (length(eccArr) - 2)
-                    tind = 1;%:2
+                    for tind = 1:nInd
                         movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfInterp)-1) = ...
                             movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfInterp)-1) + (sta3);
+                    end
                 end
 
 
@@ -297,27 +305,30 @@ clear moviePiece
 movieSmall = uint8(128 + 127*movieBig/maxMovie);
 
 movieSmall(end,end,:) = 128; movieSmall(end-1,end,:) = 128;
-figure; imagesc(sum(movieSmall,3)); colormap gray; axis equal
+figure; imagesc(sum(abs(movieSmall),3)); colormap gray; axis equal
 
 % clear movieBig
+figure; plot(RGB2XWFormat(movieSmall(301:345,301:345,:)));
+xlabel('frame'); ylabel('Black <--------------------> White');
+title('Check for on vs. off center');
 
 %% Show movie and save
 disp('creating movie now...');
 % p.save = false;% 
 p.save = true;
-p.vname = ['/Users/james/Documents/matlab/HLMaxFiring/test_April7_fps' num2str(fps) '.avi']
+p.vname = ['C:/Users/laha/Documents/GitHub/HLMaxFiring/' cellType '_fps' num2str(fps) '.avi']
 % p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_April7_fps' num2str(fps) '.avi'];
 % p.vname = 'test_April7.avi';
 p.FrameRate = fps;
-figure; 
+% figure; 
 % set(gcf,'position',[1000         157        1411        1181]);
-set(gcf,'position',[0 0   szRows   szCols]);
+% set(gcf,'position',[0 0   szRows   szCols]);
 
 %disp('test1')
 %ieMovie(movieBig(:,:,1:100), p);
 %ieMovie(movieBig, p);
 %disp('test2')
-
+ 
 % ieMovie(movieBig(:,:,1:100));
 % ieMovie(movieSmall(:,:,1:100));
 

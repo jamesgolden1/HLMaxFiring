@@ -15,6 +15,8 @@
 
 %% Initialize movie
 
+clear
+
 % Set size of movie, based on Vive specs:
 % 1080x1200 per eye, 2160x1200 total
 
@@ -23,9 +25,10 @@ szCols = 1080+zeroPad; szRows = 1200+zeroPad;
 disp(['szCols:' num2str(round(szCols))]);
 disp(['szRows:' num2str(round(szRows))]);
 
-frames = 100;
+timeLength = 20; % seconds
 
-fps = 90; % frames per second
+fps = 30; % frames per second
+frames = timeLength*fps;
 
 % Binocular field of view (FOV)
 fovCols = 110; % horizontal fov in degrees for vive: http://doc-ok.org/?p=1414
@@ -63,11 +66,11 @@ figure; imagesc(sum(movieSmall,3)); colormap gray; axis equal
 disp('creating movie now...');
 % p.save = false;% 
 p.save = true;
-p.vname = ['/Users/james/Documents/matlab/HLMaxFiring/testNS_April7_fps' num2str(fps) '.avi']
-% p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_April7_fps' num2str(fps) '.avi'];
+% p.vname = ['/Users/james/Documents/matlab/HLMaxFiring/testNS_April7_fps' num2str(fps) '.avi']
+p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\testNS_April7_fps' num2str(fps) '.avi'];
 % p.vname = 'test_April7.avi';
 p.FrameRate = fps;
-figure; 
+% figure; 
 % set(gcf,'position',[1000         157        1411        1181]);
 
 %disp('test1')
@@ -90,9 +93,11 @@ if p.save
 
 for fr = 1:size(movieSmall,3)
 %     imagesc(movieBig(:,:,fr)); colormap gray    
-    imagesc(movieSmall(:,:,fr)); colormap gray; axis image; set(gca,'xticklabel','','yticklabel','');
+%     imagesc(movieSmall(:,:,fr)); colormap gray; axis image; set(gca,'xticklabel','','yticklabel','');
     if p.save  
-        F = getframe;%(gca);%,[0 0 szRows szRows]); 
+%         F = getframe;%(gca);%,[0 0 szRows szRows]); 
+        
+        F = movieSmall(:,:,fr);
         writeVideo(vObj,F); 
     end
 %     drawnow;
@@ -100,6 +105,6 @@ end
 
 % Write the video object if save is true
 % if p.save
-    writeVideo(vObj,F);
+%     writeVideo(vObj,F);
     close(vObj);
 end
