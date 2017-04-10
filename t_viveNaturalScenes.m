@@ -21,7 +21,7 @@ clear
 % 1080x1200 per eye, 2160x1200 total
 
 zeroPad = 0;
-szCols = 1080+zeroPad; szRows = 1200+zeroPad;
+szCols = 1080+zeroPad; szRows = 1080+zeroPad;
 disp(['szCols:' num2str(round(szCols))]);
 disp(['szRows:' num2str(round(szRows))]);
 
@@ -46,9 +46,18 @@ degreesPerPixel = fovCols/szCols;
 % load(['/Users/james/Documents/MATLAB/'...
 %     'akheitman/NSEM_mapPRJ/Stimuli/'...
 %     'NSEM_eye-long-v2/testmovie_schemeA_8pix_Identity_8pix.mat']);
-load(['dat/testmovie_schemeA_8pix_Identity_8pix.mat']);
+% load('dat/mosaicGLM_apricot_sbc.mat');
+load('dat/testmovie_schemeA_8pix_Identity_8pix.mat');
 movieSmall = testmovie.matrix(:,:,1:frames);
 movieSmall = permute(movieSmall,[2 1 3]);
+
+%resizing movie based on James' code, 4/10/2017: start
+for fr = 1:size(movieSmall,3)
+    movieRS(:,:,fr) = imresize(movieSmall(:,:,fr),[1080 1080]);
+end
+clear movieSmall
+movieSmall = movieRS;
+%resizing movie based on James' code, 4/10/2017: end
 
 eccind = 0;
 
@@ -67,7 +76,8 @@ disp('creating movie now...');
 % p.save = false;% 
 p.save = true;
 % p.vname = ['/Users/james/Documents/matlab/HLMaxFiring/testNS_April7_fps' num2str(fps) '.avi']
-p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\testNS_April7_fps' num2str(fps) '.avi'];
+%p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\testNS_April7_fps' num2str(fps) '.avi'];
+p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\naturalScene.avi'];
 % p.vname = 'test_April7.avi';
 p.FrameRate = fps;
 % figure; 
