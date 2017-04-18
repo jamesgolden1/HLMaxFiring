@@ -4,16 +4,9 @@
 
 % Vive specs:
 % 1080x1200 per eye, 2160x1200 total
-% 2160 pixels = 110 degrees
-% 19.6364 pixels per degree
-% 0.0509 degrees per pixel
-
-% For midgets, 1 pixel per degree under 10 degrees ecc
-
-
-%%%%%%%%%% TO DO
-% This is dendritic field - add factor for RF?
-% Check that this is ON midget type spacing
+% 2160/2 pixels = 110 degrees
+% 9.82 pixels per degree
+% 0.1019 degrees per pixel
 
 % Typically we are concerned with the spacing within one class, in which
 % case density is halved and the spacings should be multiplied by sqrt2.
@@ -29,11 +22,11 @@ close all;
 
 % This sets the size of the STAs for individual cells
 
-% cellType = 'on parasol';
+cellType = 'on parasol';
 % cellType = 'off parasol';
 % cellType = 'on midget';
 % cellType = 'off midget';
-cellType = 'on sbc';
+% cellType = 'on sbc';
 
 % Spatial scale factor by type
 % scaleFactorArr = ['on parasol', 'off parasol', 'on midget', 'off midget', 'sbc]
@@ -47,7 +40,9 @@ scaleFactorArr = [18.92 0.85*18.9211 10.76 0.85*10.7629 20]./9.95;
 % Set size of movie, based on Vive specs:
 % 1080x1200 per eye, 2160x1200 total
 
-eyeLateral = 'left';
+
+eyeLateral = 'both';
+% eyeLateral = 'left';
 % eyeLateral = 'right';
 
 zeroPad = 0;
@@ -146,10 +141,15 @@ rgcDiameterLUT = scaleFactor*sqrt(2)*watsonRGCSpacing(szCols,szCols,fovRows)';
 
 if strcmpi(eyeLateral,'right'); rgcDiameterLUT = fliplr(rgcDiameterLUT); end
 
-degStart = -fovCols/2; degEnd = fovCols/2;
+if strcmpi(eyeLateral,'both'); 
+    rgcDiameterLUTBoth = 0.5*(rgcDiameterLUT+fliplr(rgcDiameterLUT)); 
+    rgcDiameterLUT = rgcDiameterLUTBoth; 
+end
+
+figure; degStart = -fovCols/2; degEnd = fovCols/2;
 degarr = [degStart: (degEnd-degStart)/szCols : degEnd];
 contourf(degarr,degarr,rgcDiameterLUT,[0:max(rgcDiameterLUT(:))/20:max(rgcDiameterLUT(:))] ); axis square
-% title(sprintf('Human Midget RGC RF Size (degrees)')); colorbar; 
+title(sprintf('Human %s RGC RF Size (degrees)',cellType)); colorbar; 
 
 %% Add to big movie
 
@@ -162,7 +162,7 @@ eccind = 0;
 degCenterX = fovRows/2; degCenterY = fovCols/2;
 
 % Set array of eccentricity values at which to put STA stimulus
-eccArr = [1:1:fovCols/2 - 2];
+eccArr = [1:1:fovCols/2 - 4];
 % eccArr = [.1:.25:5 5:.5:10 10:1:27.5];
 
 % Scale the sRF appropriately by cell type
@@ -179,10 +179,12 @@ end
 
 % Loop over eccentricities, put STA stim at individual positions
 
-nAngles = 128;
+% nAngles = 128;
 angleNoise = 0;%0.5;
 eccNoise   = 0;%2.5;
 
+% nAngles = round(16+[1:length(eccArr)].^2*256/(length(eccArr))^2);
+nAngles = 512;%round(16+[1:length(eccArr)]*2*256/(length(eccArr))^1);
 
 for ecc = eccArr;
     eccind = eccind+1; 
@@ -193,9 +195,10 @@ for ecc = eccArr;
     % xc = ecc*sin(theta), yc = ecc*cos(theta)
 %     for xc = [-1:.25/1:1]
 %         for yc = [-1:.25/1:1]
-
+    thetaInd = 0;
     for theta = [0 : 2*pi / nAngles : 2*pi - 2*pi/nAngles]
-
+%     for theta = [0 : 2*pi / nAngles(eccind) : 2*pi - 2*pi/nAngles(eccind)]
+        thetaInd = thetaInd+1;
         % Convert theta to x,y coordinates with some angular noise
         xc = cos(theta) + angleNoise*(1/2)*(rand(1,1)-.5); 
         yc = sin(theta) + angleNoise*(1/2)*(rand(1,1)-.5);
@@ -249,15 +252,24 @@ for ecc = eccArr;
                 ycvecend = pixelY + floor(size(sta3,1)/2);
 
                 % Choose random starting time points for stimulus
-                nInd = 12;
+                nInd = 10*12; % frames/size(irf,2)-1;
                 rstart = round((timeLength*fps-20)*rand(nInd,1))+1;
 
-                if eccind < (length(eccArr) - 2)
+%                 densityFactor = 8;
+%                 nInd = round(.5*frames/size(irf,2))-1;
+%                 if mod(thetaInd,2)
+%                     rstart = 1: round(densityFactor*size(irf,2)) : frames - size(irf,2) -1; %round((timeLength*fps-20)*rand(nInd,1))+1;
+%                     % rstart(2:end-1) = rstart(2:end-1) + round(0.4*size(irf,2))*rand(size(rstart(2:end-1)));
+%                 else
+%                     rstart = .5*densityFactor*round(size(irf,2)) : round(densityFactor*size(irf,2)) : frames - size(irf,2) -1; %round((timeLength*fps-20)*rand(nInd,1))+1;
+%                     % rstart(2:end-1) = rstart(2:end-1) + round(0.4*size(irf,2))*rand(size(rstart(2:end-1)));
+%                 end
+%                 if eccind < (length(eccArr) - 2)
                     for tind = 1:nInd
                         movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfInterp)-1) = ...
                             movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfInterp)-1) + (sta3);
                     end
-                end
+%                 end
 
 
 %                     % Choose random starting time points for stimulus
@@ -316,10 +328,10 @@ title('Check for on vs. off center');
 disp('creating movie now...');
 % p.save = false;% 
 p.save = true;
-% p.vname = ['C:/Users/laha/Documents/GitHub/HLMaxFiring/' cellType '_fps' num2str(fps) '.avi']
+p.vname = ['C:/Users/laha/Documents/GitHub/HLMaxFiring/april18_' cellType '_fps' num2str(fps) '.avi']
 % p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_fps' num2str(fps) '.avi'];
-p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\sbc2.avi'];
-% p.vname = 'test_April7.avi';
+% p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\sbc2.avi'];
+% p.vname = ['/Users/james/Documents/matlab/isetbio/local/test_April17' cellType '_fps' num2str(fps) '.avi'];
 p.FrameRate = fps;
 % figure; 
 % set(gcf,'position',[1000         157        1411        1181]);
@@ -359,3 +371,5 @@ end
 % if p.save
     close(vObj);
 end
+
+disp(sprintf('done! movie at\n%s',p.vname));
