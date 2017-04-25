@@ -27,13 +27,14 @@ eyeLateral = 'both';
 
 zeroPad = 0;
 % szCols = 1080+zeroPad; szRows = 1080+zeroPad;
-szCols = 900+zeroPad; szRows = 900+zeroPad;
+% szCols = 900+zeroPad; szRows = 900+zeroPad;
+szCols = 1080*(5/3)+zeroPad; szRows = 1080*(5/3)+zeroPad;
 disp(['szCols:' num2str(round(szCols))]);
 disp(['szRows:' num2str(round(szRows))]);
 
 timeLength = 1; % seconds
 
-fps = 30; % frames per second
+fps = 15; % frames per second
 frames = timeLength*fps;
 
 
