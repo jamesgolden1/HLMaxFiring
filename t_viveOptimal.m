@@ -55,6 +55,8 @@ timeLength = 20; % seconds
 fps = 30; % frames per second
 frames = timeLength*fps;
 
+% 1 is most dense, higher is less dense
+densityFactor = 2;
 
 % Binocular field of view (FOV)
 fovCols = 110; % horizontal fov in degrees for vive: http://doc-ok.org/?p=1414
@@ -180,11 +182,14 @@ end
 % Loop over eccentricities, put STA stim at individual positions
 
 % nAngles = 128;
-angleNoise = 0;%0.5;
-eccNoise   = 0;%2.5;
+angleNoise = 0;
+eccNoise   = 0;
+
+% angleNoise = 0.5;
+% eccNoise   = 0.5;
 
 % nAngles = round(16+[1:length(eccArr)].^2*256/(length(eccArr))^2);
-nAngles = 512;%round(16+[1:length(eccArr)]*2*256/(length(eccArr))^1);
+nAngles = 256;%round(16+[1:length(eccArr)]*2*256/(length(eccArr))^1);
 
 for ecc = eccArr;
     eccind = eccind+1; 
@@ -212,9 +217,9 @@ for ecc = eccArr;
 
                 % Get position in pixels instead of degrees
                 degX = degCenterX + ecc*xcn;%ecc*(1 + eccNoise*(1/2)*(rand(1,1)-.5));%*xcn; 
-                pixelX = degX*pixelsPerDegree + degX*eccNoise*(1/2)*(rand(1,1)-.5);                
+                pixelX = degX*pixelsPerDegree + degX*eccNoise*(1/2)*(rand(1,1)-1);                
                 degY = degCenterY + ecc*ycn; %ecc*(1 + eccNoise*(1/2)*(rand(1,1)-.5));%ecc*ycn; 
-                pixelY = degY*pixelsPerDegree + degY*eccNoise*(1/2)*(rand(1,1)-.5);
+                pixelY = degY*pixelsPerDegree + degY*eccNoise*(1/2)*(rand(1,1)-1);
 
                 % Get RGC RF diameter from LUT
                 LUTshift = (szRows - size(rgcDiameterLUT,1)+1)/2;
@@ -232,7 +237,7 @@ for ecc = eccArr;
                 % Build spatial RF according to diameter
                 % If less than one pixel, only use one pixel
                 % if ecc>5/(scaleFactor*sqrt(2))
-                if rgcDiameterDegrees > degreesPerPixel
+                if rgcDiameterDegrees > 2*degreesPerPixel
                     [so, spatialRFonedim, magnitude1STD] = buildSpatialRF(rgcRadiusPixels);
                     so = so./max(abs(so(:)));
                 else
@@ -243,34 +248,53 @@ for ecc = eccArr;
                 sta = so(:)*irfInterp;
                 % sta3 = round(128+127* (reshape(sta,[size(so,1),size(so,2),size(irfMean,2)]))./max(abs(sta(:))) );
                 sta3 = ( (reshape(sta,[size(so,1),size(so,2),size(irfInterp,2)])) );
-
+                szsta3 = size(sta3);
                 % Get start and end position values for adding in STA
                 % stimulus
-                xcvecst = pixelX - ceil(size(sta3,1)/2) + 1;
-                xcvecend = pixelX + floor(size(sta3,1)/2);
-                ycvecst = pixelY - ceil(size(sta3,1)/2) + 1;
-                ycvecend = pixelY + floor(size(sta3,1)/2);
+                xcvecst = pixelX - ceil(szsta3(1)/2) + 1;
+                xcvecend = pixelX + floor(szsta3(1)/2);
+                ycvecst = pixelY - ceil(szsta3(1)/2) + 1;
+                ycvecend = pixelY + floor(szsta3(1)/2);
 
                 % Choose random starting time points for stimulus
-                nInd = 10*12; % frames/size(irf,2)-1;
-                rstart = round((timeLength*fps-20)*rand(nInd,1))+1;
+%                 nInd = 1;%10*12; % frames/size(irf,2)-1;
+%                 rstart = round((timeLength*fps-20)*rand(nInd,1))+1;
 
-%                 densityFactor = 8;
-%                 nInd = round(.5*frames/size(irf,2))-1;
-%                 if mod(thetaInd,2)
-%                     rstart = 1: round(densityFactor*size(irf,2)) : frames - size(irf,2) -1; %round((timeLength*fps-20)*rand(nInd,1))+1;
-%                     % rstart(2:end-1) = rstart(2:end-1) + round(0.4*size(irf,2))*rand(size(rstart(2:end-1)));
-%                 else
-%                     rstart = .5*densityFactor*round(size(irf,2)) : round(densityFactor*size(irf,2)) : frames - size(irf,2) -1; %round((timeLength*fps-20)*rand(nInd,1))+1;
-%                     % rstart(2:end-1) = rstart(2:end-1) + round(0.4*size(irf,2))*rand(size(rstart(2:end-1)));
-%                 end
+%                 densityFactor = 2;
+                % mnInd = round(.5*frames/size(irf,2))-1;
+                if mod(thetaInd,2)
+                    rstart = 1: round(densityFactor*size(irfInterp,2)) : frames - 3*size(irfInterp,2) -1; %round((timeLength*fps-20)*rand(nInd,1))+1;
+                    % rstart(2:end-1) = rstart(2:end-1) + round(0.4*size(irfInterp,2))*rand(size(rstart(2:end-1)));
+                else
+                    rstart = ceil([.5*densityFactor*round(size(irfInterp,2)) : round(densityFactor*size(irfInterp,2)) : (frames - 3*size(irfInterp,2) -1)]); %round((timeLength*fps-20)*rand(nInd,1))+1;
+                    % rstart(2:end-1) = rstart(2:end-1) + round(0.4*size(irfInterp,2))*rand(size(rstart(2:end-1)));
+                end
+                rstart = rstart+round(2*size(irfInterp,2)*rand(1,1));
+                nInd = length(rstart);
 %                 if eccind < (length(eccArr) - 2)
+%                 tic
                     for tind = 1:nInd
-                        movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfInterp)-1) = ...
-                            movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart:rstart+length(irfInterp)-1) + (sta3);
+                        movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart(tind):rstart(tind)+length(irfInterp)-1) = ...
+                            movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),rstart(tind):rstart(tind)+length(irfInterp)-1) + (sta3);
                     end
+%                     toc
 %                 end
 
+%                 tic 
+%                 starep = [];
+% %                 starep = sta3(:)*ones(1,length(rstart));
+% %                 szrep1 = size(starep); 
+%                 % zeros(round((densityFactor)*size(irfInterp,2)),length(rstart))
+%                 zAdd = zeros(szsta3(1),szsta3(2),round((densityFactor)*size(irfInterp,2)));
+%                 staconcat = [sta3(:); zAdd(:)]; 
+%                 % stacatrs = reshape(staconcat, szsta3(1),szsta3(2),szsta3(3) + size(zAdd,3));                
+%                 starep = staconcat(:)*ones(1,length(rstart));
+%                 % Mstarep = [starep; ];
+%                 szrep2 = size(starep); szRC = sqrt(szrep1(1)/round((densityFactor)*size(irfInterp,2))); 
+%                 stars = (reshape(starep,[szRC szRC (size(sta3,3)+size(zAdd,3))*szrep2(2)]));
+%                 movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),1:size(stars,3)) = ...
+%                             movieBig(round(xcvecst:xcvecend),round(ycvecst:ycvecend),1:size(stars,3)) + (stars);
+%                  toc
 
 %                     % Choose random starting time points for stimulus
 %                 rstart = round((200-15)*rand(5,1))+1;
@@ -311,16 +335,18 @@ end
 %% Plot sum of frames over time
 moviePiece = movieBig(:,:,50+[1:50]);
 maxMovie = max(abs(moviePiece(:)));
-medMovie = median(moviePiece(:));
+% medMovie = median(moviePiece(:));
 clear moviePiece
 
 movieSmall = uint8(128 + 127*movieBig/maxMovie);
 
-movieSmall(end,end,:) = 128; movieSmall(end-1,end,:) = 128;
+% movieSmall(end,end,:) = 128; movieSmall(end-1,end,:) = 128;
+movieSmall(szRows/2-10:szRows/2+10, szCols/2-1:szCols/2+1,:) = 180;
+movieSmall(szRows/2-1:szRows/2+1, szCols/2-10:szCols/2+10,:) = 180;
 figure; imagesc(sum(abs(movieSmall),3)); colormap gray; axis equal
 
 % clear movieBig
-figure; plot(RGB2XWFormat(movieSmall(301:345,301:345,:)));
+figure; plot(RGB2XWFormat(movieSmall(301:345,301:345,:))');
 xlabel('frame'); ylabel('Black <--------------------> White');
 title('Check for on vs. off center');
 
@@ -328,10 +354,10 @@ title('Check for on vs. off center');
 disp('creating movie now...');
 % p.save = false;% 
 p.save = true;
-p.vname = ['C:/Users/laha/Documents/GitHub/HLMaxFiring/april18_' cellType '_fps' num2str(fps) '.avi']
-% p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_fps' num2str(fps) '.avi'];
+% p.vname = ['C:/Users/laha/Documents/GitHub/HLMaxFiring/april18_' cellType '_fps' num2str(fps) '.avi']
+p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_april24_fps' num2str(fps) '.avi'];
 % p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\sbc2.avi'];
-% p.vname = ['/Users/james/Documents/matlab/isetbio/local/test_April17' cellType '_fps' num2str(fps) '.avi'];
+% p.vname = ['/Users/james/Documents/matlab/isetbio/local/test3_April24' cellType '_fps' num2str(fps) '.avi'];
 p.FrameRate = fps;
 % figure; 
 % set(gcf,'position',[1000         157        1411        1181]);
