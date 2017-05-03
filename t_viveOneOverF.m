@@ -32,7 +32,7 @@ szCols = 1080*(5/3)+zeroPad; szRows = 1080*(5/3)+zeroPad;
 disp(['szCols:' num2str(round(szCols))]);
 disp(['szRows:' num2str(round(szRows))]);
 
-timeLength = 1; % seconds
+timeLength = 2; % seconds
 
 fps = 15; % frames per second
 frames = timeLength*fps;
@@ -152,7 +152,13 @@ clear moviePiece
 
 movieSmall = uint8(128 + 127*movieBig/maxMovie);
 
-movieSmall(end,end,:) = 128; movieSmall(end-1,end,:) = 128;
+% movieSmall(end,end,:) = 128; movieSmall(end-1,end,:) = 128;
+crossHairSize = 10;
+rowSize = 1081.0;
+colSize = 1081.0;
+movieSmall(rowSize/2-crossHairSize:rowSize/2+crossHairSize, colSize/2-1:colSize/2+1,:) = 120;
+movieSmall(rowSize/2-1:rowSize/2+1, colSize/2-crossHairSize:colSize/2+crossHairSize,:) = 120;
+
 figure; imagesc(sum(abs(movieSmall),3)); colormap gray; axis equal
 
 % clear movieBig
@@ -166,7 +172,8 @@ disp('creating movie now...');
 p.save = true;
 % p.vname = ['C:/Users/laha/Documents/GitHub/HLMaxFiring/april18_' cellType '_fps' num2str(fps) '.avi']
 % p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_fps' num2str(fps) '.avi'];
-p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test2_oneOverF_April20_fps' num2str(fps) '.avi'];
+% p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test2_oneOverF_April20_fps' num2str(fps) '.avi'];
+p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\whiteNoise1.avi'];
 % p.vname = ['/Users/james/Documents/matlab/isetbio/local/test2_oneOverF_April20_fps' num2str(fps) '.avi'];
 p.FrameRate = fps;
 % figure; 

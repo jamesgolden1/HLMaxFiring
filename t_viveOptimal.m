@@ -22,11 +22,11 @@ close all;
 
 % This sets the size of the STAs for individual cells
 
-cellType = 'on parasol';
+% cellType = 'on parasol';
 % cellType = 'off parasol';
 % cellType = 'on midget';
 % cellType = 'off midget';
-% cellType = 'on sbc';
+cellType = 'on sbc';
 
 % Spatial scale factor by type
 % scaleFactorArr = ['on parasol', 'off parasol', 'on midget', 'off midget', 'sbc]
@@ -50,13 +50,13 @@ szCols = 1080+zeroPad; szRows = 1080+zeroPad;
 disp(['szCols:' num2str(round(szCols))]);
 disp(['szRows:' num2str(round(szRows))]);
 
-timeLength = 20; % seconds
+timeLength = 10; % seconds
 
 fps = 30; % frames per second
 frames = timeLength*fps;
 
 % 1 is most dense, higher is less dense
-densityFactor = 2;
+densityFactor = 4;
 
 % Binocular field of view (FOV)
 fovCols = 110; % horizontal fov in degrees for vive: http://doc-ok.org/?p=1414
@@ -341,8 +341,9 @@ clear moviePiece
 movieSmall = uint8(128 + 127*movieBig/maxMovie);
 
 % movieSmall(end,end,:) = 128; movieSmall(end-1,end,:) = 128;
-movieSmall(szRows/2-10:szRows/2+10, szCols/2-1:szCols/2+1,:) = 180;
-movieSmall(szRows/2-1:szRows/2+1, szCols/2-10:szCols/2+10,:) = 180;
+crossHairSize = 10;
+movieSmall(szRows/2-crossHairSize:szRows/2+crossHairSize, szCols/2-1:szCols/2+1,:) = 180;
+movieSmall(szRows/2-1:szRows/2+1, szCols/2-crossHairSize:szCols/2+crossHairSize,:) = 180;
 figure; imagesc(sum(abs(movieSmall),3)); colormap gray; axis equal
 
 % clear movieBig
@@ -355,8 +356,8 @@ disp('creating movie now...');
 % p.save = false;% 
 p.save = true;
 % p.vname = ['C:/Users/laha/Documents/GitHub/HLMaxFiring/april18_' cellType '_fps' num2str(fps) '.avi']
-p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_april24_fps' num2str(fps) '.avi'];
-% p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\sbc2.avi'];
+% p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_april24_fps' num2str(fps) '.avi'];
+p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\sbc2_dense.avi'];
 % p.vname = ['/Users/james/Documents/matlab/isetbio/local/test3_April24' cellType '_fps' num2str(fps) '.avi'];
 p.FrameRate = fps;
 % figure; 
