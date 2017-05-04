@@ -32,10 +32,10 @@ szCols = 1080*(5/3)+zeroPad; szRows = 1080*(5/3)+zeroPad;
 disp(['szCols:' num2str(round(szCols))]);
 disp(['szRows:' num2str(round(szRows))]);
 
-timeLength = 2; % seconds
+timeLength = 1; % seconds
 
 fps = 15; % frames per second
-frames = timeLength*fps;
+frames = 4;%timeLength*fps;
 
 
 % Binocular field of view (FOV)
@@ -166,6 +166,14 @@ figure; plot(RGB2XWFormat(movieSmall(301:345,301:345,:))');
 xlabel('frame'); ylabel('Black <--------------------> White');
 title('Check for on vs. off center');
 
+% Normalize intensity to gray background mean/median
+for i = [2:4]; sfr = movieSmall(:,:,i); mfr(i-1) = mean(sfr(:)); end;
+% movieSmall2 = 128 + (-128+movieSmall) * (128/mean(mfr(:)));
+movieSmall = movieSmall * (128/mean(mfr(:)));
+
+% Measure norm
+% for i = 1:4; sfr = movieSmall(:,:,i); nfr(i) = norm(single(sfr(:))); end; figure; plot(nfr);
+% sqrt(1080*1080*128^2) % comes out to about this
 %% Show movie and save
 disp('creating movie now...');
 % p.save = false;% 
@@ -174,7 +182,7 @@ p.save = true;
 % p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_fps' num2str(fps) '.avi'];
 % p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test2_oneOverF_April20_fps' num2str(fps) '.avi'];
 p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\whiteNoise1.avi'];
-% p.vname = ['/Users/james/Documents/matlab/isetbio/local/test2_oneOverF_April20_fps' num2str(fps) '.avi'];
+% p.vname = ['/Users/james/Documents/matlab/isetbio/local/test2_oneOverF_May4_fps' num2str(fps) '.avi'];
 p.FrameRate = fps;
 % figure; 
 % set(gcf,'position',[1000         157        1411        1181]);

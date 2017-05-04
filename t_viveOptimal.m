@@ -56,7 +56,7 @@ fps = 30; % frames per second
 frames = timeLength*fps;
 
 % 1 is most dense, higher is less dense
-densityFactor = 4;
+densityFactor = 8;
 
 % Binocular field of view (FOV)
 fovCols = 110; % horizontal fov in degrees for vive: http://doc-ok.org/?p=1414
@@ -262,15 +262,16 @@ for ecc = eccArr;
 
 %                 densityFactor = 2;
                 % mnInd = round(.5*frames/size(irf,2))-1;
-                if mod(thetaInd,2)
-                    rstart = 1: round(densityFactor*size(irfInterp,2)) : frames - 3*size(irfInterp,2) -1; %round((timeLength*fps-20)*rand(nInd,1))+1;
+
+               if mod(thetaInd,2)
+                    rstart = 1: round(densityFactor*size(irfInterp,2)) : frames - 2*(1+densityFactor)*size(irfInterp,2) -1; %round((timeLength*fps-20)*rand(nInd,1))+1;
                     % rstart(2:end-1) = rstart(2:end-1) + round(0.4*size(irfInterp,2))*rand(size(rstart(2:end-1)));
                 else
-                    rstart = ceil([.5*densityFactor*round(size(irfInterp,2)) : round(densityFactor*size(irfInterp,2)) : (frames - 3*size(irfInterp,2) -1)]); %round((timeLength*fps-20)*rand(nInd,1))+1;
+                    rstart = ceil([.5*densityFactor*round(size(irfInterp,2)) : round(densityFactor*size(irfInterp,2)) : (frames - 2*(1+densityFactor)*size(irfInterp,2) -1)]); %round((timeLength*fps-20)*rand(nInd,1))+1;
                     % rstart(2:end-1) = rstart(2:end-1) + round(0.4*size(irfInterp,2))*rand(size(rstart(2:end-1)));
                 end
-                rstart = rstart+round(2*size(irfInterp,2)*rand(1,1));
-                nInd = length(rstart);
+                rstart = rstart+round(2*densityFactor*size(irfInterp,2)*rand(1,1));
+                  nInd = length(rstart);
 %                 if eccind < (length(eccArr) - 2)
 %                 tic
                     for tind = 1:nInd
@@ -351,14 +352,17 @@ figure; plot(RGB2XWFormat(movieSmall(301:345,301:345,:))');
 xlabel('frame'); ylabel('Black <--------------------> White');
 title('Check for on vs. off center');
 
+% Measure norm
+% for i = 5:300; sfr = movieSmall(:,:,i); nfr(i) = norm(single(sfr(:))); end; figure; plot(nfr);
+% sqrt(1080*1080*128^2) % comes out to about this
 %% Show movie and save
 disp('creating movie now...');
 % p.save = false;% 
 p.save = true;
 % p.vname = ['C:/Users/laha/Documents/GitHub/HLMaxFiring/april18_' cellType '_fps' num2str(fps) '.avi']
 % p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_april24_fps' num2str(fps) '.avi'];
-p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\sbc2_dense.avi'];
-% p.vname = ['/Users/james/Documents/matlab/isetbio/local/test3_April24' cellType '_fps' num2str(fps) '.avi'];
+p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\sbc2_sparse.avi'];
+% p.vname = ['/Users/james/Documents/matlab/isetbio/local/test3_may4' cellType '_fps' num2str(fps) '.avi'];
 p.FrameRate = fps;
 % figure; 
 % set(gcf,'position',[1000         157        1411        1181]);
