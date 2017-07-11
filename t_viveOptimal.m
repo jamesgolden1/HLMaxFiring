@@ -56,7 +56,7 @@ fps = 30; % frames per second
 frames = timeLength*fps;
 
 % 1 is most dense, higher is less dense
-densityFactor = 8;
+densityFactor = 1;
 
 % Binocular field of view (FOV)
 fovCols = 110; % horizontal fov in degrees for vive: http://doc-ok.org/?p=1414
@@ -361,7 +361,7 @@ disp('creating movie now...');
 p.save = true;
 % p.vname = ['C:/Users/laha/Documents/GitHub/HLMaxFiring/april18_' cellType '_fps' num2str(fps) '.avi']
 % p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_april24_fps' num2str(fps) '.avi'];
-p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\sbc2_sparse.avi'];
+p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\newvids\sbc2_densest.avi'];
 % p.vname = ['/Users/james/Documents/matlab/isetbio/local/test3_may4' cellType '_fps' num2str(fps) '.avi'];
 p.FrameRate = fps;
 % figure; 
