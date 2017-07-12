@@ -32,10 +32,10 @@ szCols = 1080*(5/3)+zeroPad; szRows = 1080*(5/3)+zeroPad;
 disp(['szCols:' num2str(round(szCols))]);
 disp(['szRows:' num2str(round(szRows))]);
 
-timeLength = 2; % seconds
+timeLength = 1; % seconds
 
 fps = 15; % frames per second
-frames = timeLength*fps;
+frames = 4;%timeLength*fps;
 
 
 % Binocular field of view (FOV)
@@ -181,7 +181,7 @@ p.save = true;
 % p.vname = ['C:/Users/laha/Documents/GitHub/HLMaxFiring/april18_' cellType '_fps' num2str(fps) '.avi']
 % p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test_fps' num2str(fps) '.avi'];
 % p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\test2_oneOverF_April20_fps' num2str(fps) '.avi'];
-p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\whiteNoise2.avi'];
+p.vname = ['C:\Users\laha\Documents\GitHub\regenInVR\media\whiteNoise1.avi'];
 % p.vname = ['/Users/james/Documents/matlab/isetbio/local/test2_oneOverF_May4_fps' num2str(fps) '.avi'];
 p.FrameRate = fps;
 % figure; 
